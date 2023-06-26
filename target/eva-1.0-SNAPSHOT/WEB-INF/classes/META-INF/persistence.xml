@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="EvaPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>py.com.tipcsa.eva.entities.NivelAcceso</class>
+    <class>py.com.tipcsa.eva.entities.Area</class>
+    <class>py.com.tipcsa.eva.entities.Barrio</class>
+    <class>py.com.tipcsa.eva.entities.Cargo</class>
+    <class>py.com.tipcsa.eva.entities.Ciudad</class>
+    <class>py.com.tipcsa.eva.entities.Departamento</class>
+    <class>py.com.tipcsa.eva.entities.Evaluacion</class>
+    <class>py.com.tipcsa.eva.entities.EvaluacionDetalle</class>
+    <class>py.com.tipcsa.eva.entities.EvaluadorEvaluado</class>
+    <class>py.com.tipcsa.eva.entities.EvaluadorGrupo</class>
+    <class>py.com.tipcsa.eva.entities.Grupo</class>
+    <class>py.com.tipcsa.eva.entities.GrupoPregunta</class>
+    <class>py.com.tipcsa.eva.entities.Pais</class>
+    <class>py.com.tipcsa.eva.entities.Perfil</class>
+    <class>py.com.tipcsa.eva.entities.PerfilUsuario</class>
+    <class>py.com.tipcsa.eva.entities.Persona</class>
+    <class>py.com.tipcsa.eva.entities.Pregunta</class>
+    <class>py.com.tipcsa.eva.entities.Valor</class>
+    <class>py.com.tipcsa.eva.entities.Usuario</class>
+    <class>py.com.tipcsa.eva.entities.Sucursal</class>
+    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/EvaBD"/>
+      <property name="javax.persistence.jdbc.user" value="postgres"/>
+      <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+      <property name="javax.persistence.jdbc.password" value="santiago11"/>
+    </properties>
+  </persistence-unit>
+</persistence>
