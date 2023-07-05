@@ -10,7 +10,8 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import py.com.tipcsa.eva.entities.Usuario;
+import py.com.tipcsa.eva.entities.Periodo;
+import py.com.tipcsa.eva.entities.Persona;
 import py.com.tipcsa.eva.entities.EvaluacionDetalle;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ import py.com.tipcsa.eva.entities.Evaluacion;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class EvaluacionJpaController implements Serializable {
 
@@ -43,14 +44,19 @@ public class EvaluacionJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Usuario evaluado = evaluacion.getEvaluado();
+            Periodo periodo = evaluacion.getPeriodo();
+            if (periodo != null) {
+                periodo = em.getReference(periodo.getClass(), periodo.getPeriodo());
+                evaluacion.setPeriodo(periodo);
+            }
+            Persona evaluado = evaluacion.getEvaluado();
             if (evaluado != null) {
-                evaluado = em.getReference(evaluado.getClass(), evaluado.getUsuario());
+                evaluado = em.getReference(evaluado.getClass(), evaluado.getPersona());
                 evaluacion.setEvaluado(evaluado);
             }
-            Usuario evaluador = evaluacion.getEvaluador();
+            Persona evaluador = evaluacion.getEvaluador();
             if (evaluador != null) {
-                evaluador = em.getReference(evaluador.getClass(), evaluador.getUsuario());
+                evaluador = em.getReference(evaluador.getClass(), evaluador.getPersona());
                 evaluacion.setEvaluador(evaluador);
             }
             List<EvaluacionDetalle> attachedEvaluacionDetalleList = new ArrayList<EvaluacionDetalle>();
@@ -60,6 +66,10 @@ public class EvaluacionJpaController implements Serializable {
             }
             evaluacion.setEvaluacionDetalleList(attachedEvaluacionDetalleList);
             em.persist(evaluacion);
+            if (periodo != null) {
+                periodo.getEvaluacionList().add(evaluacion);
+                periodo = em.merge(periodo);
+            }
             if (evaluado != null) {
                 evaluado.getEvaluacionList().add(evaluacion);
                 evaluado = em.merge(evaluado);
@@ -91,10 +101,12 @@ public class EvaluacionJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             Evaluacion persistentEvaluacion = em.find(Evaluacion.class, evaluacion.getEvaluacion());
-            Usuario evaluadoOld = persistentEvaluacion.getEvaluado();
-            Usuario evaluadoNew = evaluacion.getEvaluado();
-            Usuario evaluadorOld = persistentEvaluacion.getEvaluador();
-            Usuario evaluadorNew = evaluacion.getEvaluador();
+            Periodo periodoOld = persistentEvaluacion.getPeriodo();
+            Periodo periodoNew = evaluacion.getPeriodo();
+            Persona evaluadoOld = persistentEvaluacion.getEvaluado();
+            Persona evaluadoNew = evaluacion.getEvaluado();
+            Persona evaluadorOld = persistentEvaluacion.getEvaluador();
+            Persona evaluadorNew = evaluacion.getEvaluador();
             List<EvaluacionDetalle> evaluacionDetalleListOld = persistentEvaluacion.getEvaluacionDetalleList();
             List<EvaluacionDetalle> evaluacionDetalleListNew = evaluacion.getEvaluacionDetalleList();
             List<String> illegalOrphanMessages = null;
@@ -109,12 +121,16 @@ public class EvaluacionJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
+            if (periodoNew != null) {
+                periodoNew = em.getReference(periodoNew.getClass(), periodoNew.getPeriodo());
+                evaluacion.setPeriodo(periodoNew);
+            }
             if (evaluadoNew != null) {
-                evaluadoNew = em.getReference(evaluadoNew.getClass(), evaluadoNew.getUsuario());
+                evaluadoNew = em.getReference(evaluadoNew.getClass(), evaluadoNew.getPersona());
                 evaluacion.setEvaluado(evaluadoNew);
             }
             if (evaluadorNew != null) {
-                evaluadorNew = em.getReference(evaluadorNew.getClass(), evaluadorNew.getUsuario());
+                evaluadorNew = em.getReference(evaluadorNew.getClass(), evaluadorNew.getPersona());
                 evaluacion.setEvaluador(evaluadorNew);
             }
             List<EvaluacionDetalle> attachedEvaluacionDetalleListNew = new ArrayList<EvaluacionDetalle>();
@@ -125,6 +141,14 @@ public class EvaluacionJpaController implements Serializable {
             evaluacionDetalleListNew = attachedEvaluacionDetalleListNew;
             evaluacion.setEvaluacionDetalleList(evaluacionDetalleListNew);
             evaluacion = em.merge(evaluacion);
+            if (periodoOld != null && !periodoOld.equals(periodoNew)) {
+                periodoOld.getEvaluacionList().remove(evaluacion);
+                periodoOld = em.merge(periodoOld);
+            }
+            if (periodoNew != null && !periodoNew.equals(periodoOld)) {
+                periodoNew.getEvaluacionList().add(evaluacion);
+                periodoNew = em.merge(periodoNew);
+            }
             if (evaluadoOld != null && !evaluadoOld.equals(evaluadoNew)) {
                 evaluadoOld.getEvaluacionList().remove(evaluacion);
                 evaluadoOld = em.merge(evaluadoOld);
@@ -192,12 +216,17 @@ public class EvaluacionJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Usuario evaluado = evaluacion.getEvaluado();
+            Periodo periodo = evaluacion.getPeriodo();
+            if (periodo != null) {
+                periodo.getEvaluacionList().remove(evaluacion);
+                periodo = em.merge(periodo);
+            }
+            Persona evaluado = evaluacion.getEvaluado();
             if (evaluado != null) {
                 evaluado.getEvaluacionList().remove(evaluacion);
                 evaluado = em.merge(evaluado);
             }
-            Usuario evaluador = evaluacion.getEvaluador();
+            Persona evaluador = evaluacion.getEvaluador();
             if (evaluador != null) {
                 evaluador.getEvaluacionList().remove(evaluacion);
                 evaluador = em.merge(evaluador);

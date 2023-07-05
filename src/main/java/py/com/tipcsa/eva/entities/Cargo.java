@@ -21,7 +21,7 @@ import javax.persistence.Table;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "cargo")
@@ -41,7 +41,17 @@ public class Cargo implements Serializable {
     @Column(name = "descripcion")
     private String descripcion;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "cargo")
+    private List<CargoPregunta> cargoPreguntaList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cargo")
+    private List<EvaluadorCargo> evaluadorCargoList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluador")
+    private List<EvaluadorCargo> evaluadorCargoList1;
+    @OneToMany(mappedBy = "cargo")
     private List<Persona> personaList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluador")
+    private List<EvaluadorEvaluado> evaluadorEvaluadoList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "puesto")
+    private List<PuestoGrupo> puestoGrupoList;
 
     public Cargo() {
     }
@@ -71,12 +81,52 @@ public class Cargo implements Serializable {
         this.descripcion = descripcion;
     }
 
+    public List<CargoPregunta> getCargoPreguntaList() {
+        return cargoPreguntaList;
+    }
+
+    public void setCargoPreguntaList(List<CargoPregunta> cargoPreguntaList) {
+        this.cargoPreguntaList = cargoPreguntaList;
+    }
+
+    public List<EvaluadorCargo> getEvaluadorCargoList() {
+        return evaluadorCargoList;
+    }
+
+    public void setEvaluadorCargoList(List<EvaluadorCargo> evaluadorCargoList) {
+        this.evaluadorCargoList = evaluadorCargoList;
+    }
+
+    public List<EvaluadorCargo> getEvaluadorCargoList1() {
+        return evaluadorCargoList1;
+    }
+
+    public void setEvaluadorCargoList1(List<EvaluadorCargo> evaluadorCargoList1) {
+        this.evaluadorCargoList1 = evaluadorCargoList1;
+    }
+
     public List<Persona> getPersonaList() {
         return personaList;
     }
 
     public void setPersonaList(List<Persona> personaList) {
         this.personaList = personaList;
+    }
+
+    public List<EvaluadorEvaluado> getEvaluadorEvaluadoList() {
+        return evaluadorEvaluadoList;
+    }
+
+    public void setEvaluadorEvaluadoList(List<EvaluadorEvaluado> evaluadorEvaluadoList) {
+        this.evaluadorEvaluadoList = evaluadorEvaluadoList;
+    }
+
+    public List<PuestoGrupo> getPuestoGrupoList() {
+        return puestoGrupoList;
+    }
+
+    public void setPuestoGrupoList(List<PuestoGrupo> puestoGrupoList) {
+        this.puestoGrupoList = puestoGrupoList;
     }
 
     @Override

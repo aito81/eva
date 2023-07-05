@@ -6,9 +6,7 @@
 package py.com.tipcsa.eva.entities;
 
 import java.io.Serializable;
-import java.util.List;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,12 +16,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "usuario")
@@ -48,23 +45,17 @@ public class Usuario implements Serializable {
     @Column(name = "clave")
     private String clave;
     @Basic(optional = false)
-    @Column(name = "Activo")
+    @Column(name = "activo")
     private boolean activo;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluado")
-    private List<Evaluacion> evaluacionList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluador")
-    private List<Evaluacion> evaluacionList1;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluado")
-    private List<EvaluadorEvaluado> evaluadorEvaluadoList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluador")
-    private List<EvaluadorEvaluado> evaluadorEvaluadoList1;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "usuario")
-    private List<PerfilUsuario> perfilUsuarioList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluador")
-    private List<EvaluadorGrupo> evaluadorGrupoList;
     @JoinColumn(name = "nivel_acceso", referencedColumnName = "nivel_acceso")
     @ManyToOne(optional = false)
     private NivelAcceso nivelAcceso;
+    @JoinColumn(name = "perfil", referencedColumnName = "perfil")
+    @ManyToOne
+    private Perfil perfil;
+    @JoinColumn(name = "persona", referencedColumnName = "persona")
+    @ManyToOne(optional = false)
+    private Persona persona;
 
     public Usuario() {
     }
@@ -112,60 +103,28 @@ public class Usuario implements Serializable {
         this.activo = activo;
     }
 
-    public List<Evaluacion> getEvaluacionList() {
-        return evaluacionList;
-    }
-
-    public void setEvaluacionList(List<Evaluacion> evaluacionList) {
-        this.evaluacionList = evaluacionList;
-    }
-
-    public List<Evaluacion> getEvaluacionList1() {
-        return evaluacionList1;
-    }
-
-    public void setEvaluacionList1(List<Evaluacion> evaluacionList1) {
-        this.evaluacionList1 = evaluacionList1;
-    }
-
-    public List<EvaluadorEvaluado> getEvaluadorEvaluadoList() {
-        return evaluadorEvaluadoList;
-    }
-
-    public void setEvaluadorEvaluadoList(List<EvaluadorEvaluado> evaluadorEvaluadoList) {
-        this.evaluadorEvaluadoList = evaluadorEvaluadoList;
-    }
-
-    public List<EvaluadorEvaluado> getEvaluadorEvaluadoList1() {
-        return evaluadorEvaluadoList1;
-    }
-
-    public void setEvaluadorEvaluadoList1(List<EvaluadorEvaluado> evaluadorEvaluadoList1) {
-        this.evaluadorEvaluadoList1 = evaluadorEvaluadoList1;
-    }
-
-    public List<PerfilUsuario> getPerfilUsuarioList() {
-        return perfilUsuarioList;
-    }
-
-    public void setPerfilUsuarioList(List<PerfilUsuario> perfilUsuarioList) {
-        this.perfilUsuarioList = perfilUsuarioList;
-    }
-
-    public List<EvaluadorGrupo> getEvaluadorGrupoList() {
-        return evaluadorGrupoList;
-    }
-
-    public void setEvaluadorGrupoList(List<EvaluadorGrupo> evaluadorGrupoList) {
-        this.evaluadorGrupoList = evaluadorGrupoList;
-    }
-
     public NivelAcceso getNivelAcceso() {
         return nivelAcceso;
     }
 
     public void setNivelAcceso(NivelAcceso nivelAcceso) {
         this.nivelAcceso = nivelAcceso;
+    }
+
+    public Perfil getPerfil() {
+        return perfil;
+    }
+
+    public void setPerfil(Perfil perfil) {
+        this.perfil = perfil;
+    }
+
+    public Persona getPersona() {
+        return persona;
+    }
+
+    public void setPersona(Persona persona) {
+        this.persona = persona;
     }
 
     @Override

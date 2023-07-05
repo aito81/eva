@@ -13,6 +13,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -20,14 +22,13 @@ import javax.persistence.Table;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "barrio")
 @NamedQueries({
     @NamedQuery(name = "Barrio.findAll", query = "SELECT b FROM Barrio b"),
     @NamedQuery(name = "Barrio.findByBarrio", query = "SELECT b FROM Barrio b WHERE b.barrio = :barrio"),
-    @NamedQuery(name = "Barrio.findByCiudad", query = "SELECT b FROM Barrio b WHERE b.ciudad = :ciudad"),
     @NamedQuery(name = "Barrio.findByDescripcion", query = "SELECT b FROM Barrio b WHERE b.descripcion = :descripcion")})
 public class Barrio implements Serializable {
 
@@ -38,11 +39,11 @@ public class Barrio implements Serializable {
     @Column(name = "barrio")
     private Integer barrio;
     @Basic(optional = false)
-    @Column(name = "ciudad")
-    private int ciudad;
-    @Basic(optional = false)
     @Column(name = "descripcion")
     private String descripcion;
+    @JoinColumn(name = "ciudad", referencedColumnName = "ciudad")
+    @ManyToOne(optional = false)
+    private Ciudad ciudad;
     @OneToMany(mappedBy = "barrio")
     private List<Persona> personaList;
 
@@ -53,9 +54,8 @@ public class Barrio implements Serializable {
         this.barrio = barrio;
     }
 
-    public Barrio(Integer barrio, int ciudad, String descripcion) {
+    public Barrio(Integer barrio, String descripcion) {
         this.barrio = barrio;
-        this.ciudad = ciudad;
         this.descripcion = descripcion;
     }
 
@@ -67,20 +67,20 @@ public class Barrio implements Serializable {
         this.barrio = barrio;
     }
 
-    public int getCiudad() {
-        return ciudad;
-    }
-
-    public void setCiudad(int ciudad) {
-        this.ciudad = ciudad;
-    }
-
     public String getDescripcion() {
         return descripcion;
     }
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public Ciudad getCiudad() {
+        return ciudad;
+    }
+
+    public void setCiudad(Ciudad ciudad) {
+        this.ciudad = ciudad;
     }
 
     public List<Persona> getPersonaList() {

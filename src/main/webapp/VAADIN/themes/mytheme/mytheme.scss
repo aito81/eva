@@ -31,6 +31,8 @@
 
 @import "../valo/valo.scss";
 
+$valo-menu-background-color: #F9370D;
+
 @mixin mytheme {
   @include valo;
 

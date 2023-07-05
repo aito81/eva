@@ -8,7 +8,6 @@ package py.com.tipcsa.eva.entities;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,7 +20,7 @@ import javax.persistence.Table;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "perfil")
@@ -40,8 +39,8 @@ public class Perfil implements Serializable {
     @Basic(optional = false)
     @Column(name = "descripcion")
     private String descripcion;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "perfil")
-    private List<PerfilUsuario> perfilUsuarioList;
+    @OneToMany(mappedBy = "perfil")
+    private List<Usuario> usuarioList;
 
     public Perfil() {
     }
@@ -71,12 +70,12 @@ public class Perfil implements Serializable {
         this.descripcion = descripcion;
     }
 
-    public List<PerfilUsuario> getPerfilUsuarioList() {
-        return perfilUsuarioList;
+    public List<Usuario> getUsuarioList() {
+        return usuarioList;
     }
 
-    public void setPerfilUsuarioList(List<PerfilUsuario> perfilUsuarioList) {
-        this.perfilUsuarioList = perfilUsuarioList;
+    public void setUsuarioList(List<Usuario> usuarioList) {
+        this.usuarioList = usuarioList;
     }
 
     @Override

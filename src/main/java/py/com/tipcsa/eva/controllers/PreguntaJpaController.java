@@ -10,19 +10,20 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import py.com.tipcsa.eva.entities.GrupoPregunta;
+import py.com.tipcsa.eva.entities.CargoPregunta;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import py.com.tipcsa.eva.controllers.exceptions.IllegalOrphanException;
 import py.com.tipcsa.eva.controllers.exceptions.NonexistentEntityException;
+import py.com.tipcsa.eva.entities.GrupoPregunta;
 import py.com.tipcsa.eva.entities.EvaluacionDetalle;
 import py.com.tipcsa.eva.entities.Pregunta;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class PreguntaJpaController implements Serializable {
 
@@ -36,6 +37,9 @@ public class PreguntaJpaController implements Serializable {
     }
 
     public void create(Pregunta pregunta) {
+        if (pregunta.getCargoPreguntaList() == null) {
+            pregunta.setCargoPreguntaList(new ArrayList<CargoPregunta>());
+        }
         if (pregunta.getGrupoPreguntaList() == null) {
             pregunta.setGrupoPreguntaList(new ArrayList<GrupoPregunta>());
         }
@@ -46,6 +50,12 @@ public class PreguntaJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            List<CargoPregunta> attachedCargoPreguntaList = new ArrayList<CargoPregunta>();
+            for (CargoPregunta cargoPreguntaListCargoPreguntaToAttach : pregunta.getCargoPreguntaList()) {
+                cargoPreguntaListCargoPreguntaToAttach = em.getReference(cargoPreguntaListCargoPreguntaToAttach.getClass(), cargoPreguntaListCargoPreguntaToAttach.getCargoPregunta());
+                attachedCargoPreguntaList.add(cargoPreguntaListCargoPreguntaToAttach);
+            }
+            pregunta.setCargoPreguntaList(attachedCargoPreguntaList);
             List<GrupoPregunta> attachedGrupoPreguntaList = new ArrayList<GrupoPregunta>();
             for (GrupoPregunta grupoPreguntaListGrupoPreguntaToAttach : pregunta.getGrupoPreguntaList()) {
                 grupoPreguntaListGrupoPreguntaToAttach = em.getReference(grupoPreguntaListGrupoPreguntaToAttach.getClass(), grupoPreguntaListGrupoPreguntaToAttach.getGrupoPregunta());
@@ -59,6 +69,15 @@ public class PreguntaJpaController implements Serializable {
             }
             pregunta.setEvaluacionDetalleList(attachedEvaluacionDetalleList);
             em.persist(pregunta);
+            for (CargoPregunta cargoPreguntaListCargoPregunta : pregunta.getCargoPreguntaList()) {
+                Pregunta oldPreguntaOfCargoPreguntaListCargoPregunta = cargoPreguntaListCargoPregunta.getPregunta();
+                cargoPreguntaListCargoPregunta.setPregunta(pregunta);
+                cargoPreguntaListCargoPregunta = em.merge(cargoPreguntaListCargoPregunta);
+                if (oldPreguntaOfCargoPreguntaListCargoPregunta != null) {
+                    oldPreguntaOfCargoPreguntaListCargoPregunta.getCargoPreguntaList().remove(cargoPreguntaListCargoPregunta);
+                    oldPreguntaOfCargoPreguntaListCargoPregunta = em.merge(oldPreguntaOfCargoPreguntaListCargoPregunta);
+                }
+            }
             for (GrupoPregunta grupoPreguntaListGrupoPregunta : pregunta.getGrupoPreguntaList()) {
                 Pregunta oldPreguntaOfGrupoPreguntaListGrupoPregunta = grupoPreguntaListGrupoPregunta.getPregunta();
                 grupoPreguntaListGrupoPregunta.setPregunta(pregunta);
@@ -91,11 +110,21 @@ public class PreguntaJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             Pregunta persistentPregunta = em.find(Pregunta.class, pregunta.getPregunta());
+            List<CargoPregunta> cargoPreguntaListOld = persistentPregunta.getCargoPreguntaList();
+            List<CargoPregunta> cargoPreguntaListNew = pregunta.getCargoPreguntaList();
             List<GrupoPregunta> grupoPreguntaListOld = persistentPregunta.getGrupoPreguntaList();
             List<GrupoPregunta> grupoPreguntaListNew = pregunta.getGrupoPreguntaList();
             List<EvaluacionDetalle> evaluacionDetalleListOld = persistentPregunta.getEvaluacionDetalleList();
             List<EvaluacionDetalle> evaluacionDetalleListNew = pregunta.getEvaluacionDetalleList();
             List<String> illegalOrphanMessages = null;
+            for (CargoPregunta cargoPreguntaListOldCargoPregunta : cargoPreguntaListOld) {
+                if (!cargoPreguntaListNew.contains(cargoPreguntaListOldCargoPregunta)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain CargoPregunta " + cargoPreguntaListOldCargoPregunta + " since its pregunta field is not nullable.");
+                }
+            }
             for (GrupoPregunta grupoPreguntaListOldGrupoPregunta : grupoPreguntaListOld) {
                 if (!grupoPreguntaListNew.contains(grupoPreguntaListOldGrupoPregunta)) {
                     if (illegalOrphanMessages == null) {
@@ -115,6 +144,13 @@ public class PreguntaJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
+            List<CargoPregunta> attachedCargoPreguntaListNew = new ArrayList<CargoPregunta>();
+            for (CargoPregunta cargoPreguntaListNewCargoPreguntaToAttach : cargoPreguntaListNew) {
+                cargoPreguntaListNewCargoPreguntaToAttach = em.getReference(cargoPreguntaListNewCargoPreguntaToAttach.getClass(), cargoPreguntaListNewCargoPreguntaToAttach.getCargoPregunta());
+                attachedCargoPreguntaListNew.add(cargoPreguntaListNewCargoPreguntaToAttach);
+            }
+            cargoPreguntaListNew = attachedCargoPreguntaListNew;
+            pregunta.setCargoPreguntaList(cargoPreguntaListNew);
             List<GrupoPregunta> attachedGrupoPreguntaListNew = new ArrayList<GrupoPregunta>();
             for (GrupoPregunta grupoPreguntaListNewGrupoPreguntaToAttach : grupoPreguntaListNew) {
                 grupoPreguntaListNewGrupoPreguntaToAttach = em.getReference(grupoPreguntaListNewGrupoPreguntaToAttach.getClass(), grupoPreguntaListNewGrupoPreguntaToAttach.getGrupoPregunta());
@@ -130,6 +166,17 @@ public class PreguntaJpaController implements Serializable {
             evaluacionDetalleListNew = attachedEvaluacionDetalleListNew;
             pregunta.setEvaluacionDetalleList(evaluacionDetalleListNew);
             pregunta = em.merge(pregunta);
+            for (CargoPregunta cargoPreguntaListNewCargoPregunta : cargoPreguntaListNew) {
+                if (!cargoPreguntaListOld.contains(cargoPreguntaListNewCargoPregunta)) {
+                    Pregunta oldPreguntaOfCargoPreguntaListNewCargoPregunta = cargoPreguntaListNewCargoPregunta.getPregunta();
+                    cargoPreguntaListNewCargoPregunta.setPregunta(pregunta);
+                    cargoPreguntaListNewCargoPregunta = em.merge(cargoPreguntaListNewCargoPregunta);
+                    if (oldPreguntaOfCargoPreguntaListNewCargoPregunta != null && !oldPreguntaOfCargoPreguntaListNewCargoPregunta.equals(pregunta)) {
+                        oldPreguntaOfCargoPreguntaListNewCargoPregunta.getCargoPreguntaList().remove(cargoPreguntaListNewCargoPregunta);
+                        oldPreguntaOfCargoPreguntaListNewCargoPregunta = em.merge(oldPreguntaOfCargoPreguntaListNewCargoPregunta);
+                    }
+                }
+            }
             for (GrupoPregunta grupoPreguntaListNewGrupoPregunta : grupoPreguntaListNew) {
                 if (!grupoPreguntaListOld.contains(grupoPreguntaListNewGrupoPregunta)) {
                     Pregunta oldPreguntaOfGrupoPreguntaListNewGrupoPregunta = grupoPreguntaListNewGrupoPregunta.getPregunta();
@@ -182,6 +229,13 @@ public class PreguntaJpaController implements Serializable {
                 throw new NonexistentEntityException("The pregunta with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
+            List<CargoPregunta> cargoPreguntaListOrphanCheck = pregunta.getCargoPreguntaList();
+            for (CargoPregunta cargoPreguntaListOrphanCheckCargoPregunta : cargoPreguntaListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Pregunta (" + pregunta + ") cannot be destroyed since the CargoPregunta " + cargoPreguntaListOrphanCheckCargoPregunta + " in its cargoPreguntaList field has a non-nullable pregunta field.");
+            }
             List<GrupoPregunta> grupoPreguntaListOrphanCheck = pregunta.getGrupoPreguntaList();
             for (GrupoPregunta grupoPreguntaListOrphanCheckGrupoPregunta : grupoPreguntaListOrphanCheck) {
                 if (illegalOrphanMessages == null) {

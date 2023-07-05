@@ -20,7 +20,7 @@ import py.com.tipcsa.eva.entities.Area;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class AreaJpaController implements Serializable {
 

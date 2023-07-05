@@ -10,18 +10,17 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import py.com.tipcsa.eva.entities.PerfilUsuario;
+import py.com.tipcsa.eva.entities.Usuario;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import py.com.tipcsa.eva.controllers.exceptions.IllegalOrphanException;
 import py.com.tipcsa.eva.controllers.exceptions.NonexistentEntityException;
 import py.com.tipcsa.eva.entities.Perfil;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class PerfilJpaController implements Serializable {
 
@@ -35,27 +34,27 @@ public class PerfilJpaController implements Serializable {
     }
 
     public void create(Perfil perfil) {
-        if (perfil.getPerfilUsuarioList() == null) {
-            perfil.setPerfilUsuarioList(new ArrayList<PerfilUsuario>());
+        if (perfil.getUsuarioList() == null) {
+            perfil.setUsuarioList(new ArrayList<Usuario>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            List<PerfilUsuario> attachedPerfilUsuarioList = new ArrayList<PerfilUsuario>();
-            for (PerfilUsuario perfilUsuarioListPerfilUsuarioToAttach : perfil.getPerfilUsuarioList()) {
-                perfilUsuarioListPerfilUsuarioToAttach = em.getReference(perfilUsuarioListPerfilUsuarioToAttach.getClass(), perfilUsuarioListPerfilUsuarioToAttach.getPerfilUsuario());
-                attachedPerfilUsuarioList.add(perfilUsuarioListPerfilUsuarioToAttach);
+            List<Usuario> attachedUsuarioList = new ArrayList<Usuario>();
+            for (Usuario usuarioListUsuarioToAttach : perfil.getUsuarioList()) {
+                usuarioListUsuarioToAttach = em.getReference(usuarioListUsuarioToAttach.getClass(), usuarioListUsuarioToAttach.getUsuario());
+                attachedUsuarioList.add(usuarioListUsuarioToAttach);
             }
-            perfil.setPerfilUsuarioList(attachedPerfilUsuarioList);
+            perfil.setUsuarioList(attachedUsuarioList);
             em.persist(perfil);
-            for (PerfilUsuario perfilUsuarioListPerfilUsuario : perfil.getPerfilUsuarioList()) {
-                Perfil oldPerfilOfPerfilUsuarioListPerfilUsuario = perfilUsuarioListPerfilUsuario.getPerfil();
-                perfilUsuarioListPerfilUsuario.setPerfil(perfil);
-                perfilUsuarioListPerfilUsuario = em.merge(perfilUsuarioListPerfilUsuario);
-                if (oldPerfilOfPerfilUsuarioListPerfilUsuario != null) {
-                    oldPerfilOfPerfilUsuarioListPerfilUsuario.getPerfilUsuarioList().remove(perfilUsuarioListPerfilUsuario);
-                    oldPerfilOfPerfilUsuarioListPerfilUsuario = em.merge(oldPerfilOfPerfilUsuarioListPerfilUsuario);
+            for (Usuario usuarioListUsuario : perfil.getUsuarioList()) {
+                Perfil oldPerfilOfUsuarioListUsuario = usuarioListUsuario.getPerfil();
+                usuarioListUsuario.setPerfil(perfil);
+                usuarioListUsuario = em.merge(usuarioListUsuario);
+                if (oldPerfilOfUsuarioListUsuario != null) {
+                    oldPerfilOfUsuarioListUsuario.getUsuarioList().remove(usuarioListUsuario);
+                    oldPerfilOfUsuarioListUsuario = em.merge(oldPerfilOfUsuarioListUsuario);
                 }
             }
             em.getTransaction().commit();
@@ -66,42 +65,36 @@ public class PerfilJpaController implements Serializable {
         }
     }
 
-    public void edit(Perfil perfil) throws IllegalOrphanException, NonexistentEntityException, Exception {
+    public void edit(Perfil perfil) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
             Perfil persistentPerfil = em.find(Perfil.class, perfil.getPerfil());
-            List<PerfilUsuario> perfilUsuarioListOld = persistentPerfil.getPerfilUsuarioList();
-            List<PerfilUsuario> perfilUsuarioListNew = perfil.getPerfilUsuarioList();
-            List<String> illegalOrphanMessages = null;
-            for (PerfilUsuario perfilUsuarioListOldPerfilUsuario : perfilUsuarioListOld) {
-                if (!perfilUsuarioListNew.contains(perfilUsuarioListOldPerfilUsuario)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain PerfilUsuario " + perfilUsuarioListOldPerfilUsuario + " since its perfil field is not nullable.");
+            List<Usuario> usuarioListOld = persistentPerfil.getUsuarioList();
+            List<Usuario> usuarioListNew = perfil.getUsuarioList();
+            List<Usuario> attachedUsuarioListNew = new ArrayList<Usuario>();
+            for (Usuario usuarioListNewUsuarioToAttach : usuarioListNew) {
+                usuarioListNewUsuarioToAttach = em.getReference(usuarioListNewUsuarioToAttach.getClass(), usuarioListNewUsuarioToAttach.getUsuario());
+                attachedUsuarioListNew.add(usuarioListNewUsuarioToAttach);
+            }
+            usuarioListNew = attachedUsuarioListNew;
+            perfil.setUsuarioList(usuarioListNew);
+            perfil = em.merge(perfil);
+            for (Usuario usuarioListOldUsuario : usuarioListOld) {
+                if (!usuarioListNew.contains(usuarioListOldUsuario)) {
+                    usuarioListOldUsuario.setPerfil(null);
+                    usuarioListOldUsuario = em.merge(usuarioListOldUsuario);
                 }
             }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
-            List<PerfilUsuario> attachedPerfilUsuarioListNew = new ArrayList<PerfilUsuario>();
-            for (PerfilUsuario perfilUsuarioListNewPerfilUsuarioToAttach : perfilUsuarioListNew) {
-                perfilUsuarioListNewPerfilUsuarioToAttach = em.getReference(perfilUsuarioListNewPerfilUsuarioToAttach.getClass(), perfilUsuarioListNewPerfilUsuarioToAttach.getPerfilUsuario());
-                attachedPerfilUsuarioListNew.add(perfilUsuarioListNewPerfilUsuarioToAttach);
-            }
-            perfilUsuarioListNew = attachedPerfilUsuarioListNew;
-            perfil.setPerfilUsuarioList(perfilUsuarioListNew);
-            perfil = em.merge(perfil);
-            for (PerfilUsuario perfilUsuarioListNewPerfilUsuario : perfilUsuarioListNew) {
-                if (!perfilUsuarioListOld.contains(perfilUsuarioListNewPerfilUsuario)) {
-                    Perfil oldPerfilOfPerfilUsuarioListNewPerfilUsuario = perfilUsuarioListNewPerfilUsuario.getPerfil();
-                    perfilUsuarioListNewPerfilUsuario.setPerfil(perfil);
-                    perfilUsuarioListNewPerfilUsuario = em.merge(perfilUsuarioListNewPerfilUsuario);
-                    if (oldPerfilOfPerfilUsuarioListNewPerfilUsuario != null && !oldPerfilOfPerfilUsuarioListNewPerfilUsuario.equals(perfil)) {
-                        oldPerfilOfPerfilUsuarioListNewPerfilUsuario.getPerfilUsuarioList().remove(perfilUsuarioListNewPerfilUsuario);
-                        oldPerfilOfPerfilUsuarioListNewPerfilUsuario = em.merge(oldPerfilOfPerfilUsuarioListNewPerfilUsuario);
+            for (Usuario usuarioListNewUsuario : usuarioListNew) {
+                if (!usuarioListOld.contains(usuarioListNewUsuario)) {
+                    Perfil oldPerfilOfUsuarioListNewUsuario = usuarioListNewUsuario.getPerfil();
+                    usuarioListNewUsuario.setPerfil(perfil);
+                    usuarioListNewUsuario = em.merge(usuarioListNewUsuario);
+                    if (oldPerfilOfUsuarioListNewUsuario != null && !oldPerfilOfUsuarioListNewUsuario.equals(perfil)) {
+                        oldPerfilOfUsuarioListNewUsuario.getUsuarioList().remove(usuarioListNewUsuario);
+                        oldPerfilOfUsuarioListNewUsuario = em.merge(oldPerfilOfUsuarioListNewUsuario);
                     }
                 }
             }
@@ -122,7 +115,7 @@ public class PerfilJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -134,16 +127,10 @@ public class PerfilJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The perfil with id " + id + " no longer exists.", enfe);
             }
-            List<String> illegalOrphanMessages = null;
-            List<PerfilUsuario> perfilUsuarioListOrphanCheck = perfil.getPerfilUsuarioList();
-            for (PerfilUsuario perfilUsuarioListOrphanCheckPerfilUsuario : perfilUsuarioListOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This Perfil (" + perfil + ") cannot be destroyed since the PerfilUsuario " + perfilUsuarioListOrphanCheckPerfilUsuario + " in its perfilUsuarioList field has a non-nullable perfil field.");
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
+            List<Usuario> usuarioList = perfil.getUsuarioList();
+            for (Usuario usuarioListUsuario : usuarioList) {
+                usuarioListUsuario.setPerfil(null);
+                usuarioListUsuario = em.merge(usuarioListUsuario);
             }
             em.remove(perfil);
             em.getTransaction().commit();

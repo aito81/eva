@@ -1,10 +1,12 @@
 package py.com.tipcsa.eva.view;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.server.FileResource;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.shared.ui.ContentMode;
@@ -18,6 +20,7 @@ import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
 
+import py.com.tipcsa.eva.EvaUI;
 import py.com.tipcsa.eva.entities.Usuario;
 import py.com.tipcsa.eva.event.EventBus;
 import py.com.tipcsa.eva.event.LogoutEvent;
@@ -97,7 +100,7 @@ public class NavigationBar extends CssLayout implements ViewChangeListener, Broa
         logo.setSizeUndefined();
         HorizontalLayout logoWrapper = new HorizontalLayout(logo);
         logoWrapper.setComponentAlignment(logo, Alignment.MIDDLE_CENTER);
-        logoWrapper.addStyleName("valo-menu-title");
+        //logoWrapper.addStyleName("valo-menu-title");
         return logoWrapper;
     }
 	
@@ -106,23 +109,25 @@ public class NavigationBar extends CssLayout implements ViewChangeListener, Broa
         final MenuBar settings = new MenuBar();
         settings.addStyleName("user-menu");
         Usuario usuario = UserUtil.getUsuario();
-        /*if (usuario.getAvatar() != null) {
-        	File archivo = new File(usuario.getAvatar());
+        if (usuario.getPersona().getFoto() != null) {
+        	File archivo = new File(usuario.getPersona().getFoto());
         	settingsItem = settings.addItem("", new FileResource(archivo), null);
-        } else {*/
+        } else 
         	settingsItem = settings.addItem("", new ThemeResource(
-                    "images/profile-pic-300px.jpg"), null);
+                    "images/cabeceraImagen.png"), null);
         //}
-        settingsItem.setText("ALOHAAAAAAAAAAAAAA"/*usuario.getDescripcion()*/);
-        settingsItem.addItem("Editar Perfil", new Command() {
-            /**
-			 * 
-			 */
+        settingsItem.setText(usuario.getDescripcion());
+        
+        
+        
+        settingsItem.addItem("Cambiar clave", new Command() {
+            
 			private static final long serialVersionUID = 1L;
 
 			@Override
             public void menuSelected(final MenuItem selectedItem) {
-            	EventBus.post(new NavigationEvent("perfil"));
+            	//EventBus.post(new NavigationEvent("perfil"));
+				EvaUI.getCurrent().getNavigator().navigateTo("perfil");
             }
         });
 //        settingsItem.addItem("Preferencias", new Command() {

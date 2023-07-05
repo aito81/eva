@@ -20,13 +20,14 @@ import javax.persistence.Table;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "evaluacion_detalle")
 @NamedQueries({
     @NamedQuery(name = "EvaluacionDetalle.findAll", query = "SELECT e FROM EvaluacionDetalle e"),
-    @NamedQuery(name = "EvaluacionDetalle.findByEvaluacionDetalle", query = "SELECT e FROM EvaluacionDetalle e WHERE e.evaluacionDetalle = :evaluacionDetalle")})
+    @NamedQuery(name = "EvaluacionDetalle.findByEvaluacionDetalle", query = "SELECT e FROM EvaluacionDetalle e WHERE e.evaluacionDetalle = :evaluacionDetalle"),
+    @NamedQuery(name = "EvaluacionDetalle.findByPeso", query = "SELECT e FROM EvaluacionDetalle e WHERE e.peso = :peso")})
 public class EvaluacionDetalle implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -35,6 +36,9 @@ public class EvaluacionDetalle implements Serializable {
     @Basic(optional = false)
     @Column(name = "evaluacion_detalle")
     private Integer evaluacionDetalle;
+    @Basic(optional = false)
+    @Column(name = "peso")
+    private double peso;
     @JoinColumn(name = "evaluacion", referencedColumnName = "evaluacion")
     @ManyToOne(optional = false)
     private Evaluacion evaluacion;
@@ -52,12 +56,25 @@ public class EvaluacionDetalle implements Serializable {
         this.evaluacionDetalle = evaluacionDetalle;
     }
 
+    public EvaluacionDetalle(Integer evaluacionDetalle, double peso) {
+        this.evaluacionDetalle = evaluacionDetalle;
+        this.peso = peso;
+    }
+
     public Integer getEvaluacionDetalle() {
         return evaluacionDetalle;
     }
 
     public void setEvaluacionDetalle(Integer evaluacionDetalle) {
         this.evaluacionDetalle = evaluacionDetalle;
+    }
+
+    public double getPeso() {
+        return peso;
+    }
+
+    public void setPeso(double peso) {
+        this.peso = peso;
     }
 
     public Evaluacion getEvaluacion() {

@@ -21,14 +21,15 @@ import javax.persistence.Table;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "pregunta")
 @NamedQueries({
     @NamedQuery(name = "Pregunta.findAll", query = "SELECT p FROM Pregunta p"),
     @NamedQuery(name = "Pregunta.findByPregunta", query = "SELECT p FROM Pregunta p WHERE p.pregunta = :pregunta"),
-    @NamedQuery(name = "Pregunta.findByDescripcion", query = "SELECT p FROM Pregunta p WHERE p.descripcion = :descripcion")})
+    @NamedQuery(name = "Pregunta.findByDescripcion", query = "SELECT p FROM Pregunta p WHERE p.descripcion = :descripcion"),
+    @NamedQuery(name = "Pregunta.findByActivo", query = "SELECT p FROM Pregunta p WHERE p.activo = :activo")})
 public class Pregunta implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,6 +41,11 @@ public class Pregunta implements Serializable {
     @Basic(optional = false)
     @Column(name = "descripcion")
     private String descripcion;
+    @Basic(optional = false)
+    @Column(name = "activo")
+    private boolean activo;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "pregunta")
+    private List<CargoPregunta> cargoPreguntaList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "pregunta")
     private List<GrupoPregunta> grupoPreguntaList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "pregunta")
@@ -52,9 +58,10 @@ public class Pregunta implements Serializable {
         this.pregunta = pregunta;
     }
 
-    public Pregunta(Integer pregunta, String descripcion) {
+    public Pregunta(Integer pregunta, String descripcion, boolean activo) {
         this.pregunta = pregunta;
         this.descripcion = descripcion;
+        this.activo = activo;
     }
 
     public Integer getPregunta() {
@@ -71,6 +78,22 @@ public class Pregunta implements Serializable {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
+    public List<CargoPregunta> getCargoPreguntaList() {
+        return cargoPreguntaList;
+    }
+
+    public void setCargoPreguntaList(List<CargoPregunta> cargoPreguntaList) {
+        this.cargoPreguntaList = cargoPreguntaList;
     }
 
     public List<GrupoPregunta> getGrupoPreguntaList() {

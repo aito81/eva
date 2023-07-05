@@ -10,6 +10,7 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import py.com.tipcsa.eva.entities.Ciudad;
 import py.com.tipcsa.eva.entities.Persona;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ import py.com.tipcsa.eva.entities.Barrio;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class BarrioJpaController implements Serializable {
 
@@ -41,6 +42,11 @@ public class BarrioJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            Ciudad ciudad = barrio.getCiudad();
+            if (ciudad != null) {
+                ciudad = em.getReference(ciudad.getClass(), ciudad.getCiudad());
+                barrio.setCiudad(ciudad);
+            }
             List<Persona> attachedPersonaList = new ArrayList<Persona>();
             for (Persona personaListPersonaToAttach : barrio.getPersonaList()) {
                 personaListPersonaToAttach = em.getReference(personaListPersonaToAttach.getClass(), personaListPersonaToAttach.getPersona());
@@ -48,6 +54,10 @@ public class BarrioJpaController implements Serializable {
             }
             barrio.setPersonaList(attachedPersonaList);
             em.persist(barrio);
+            if (ciudad != null) {
+                ciudad.getBarrioList().add(barrio);
+                ciudad = em.merge(ciudad);
+            }
             for (Persona personaListPersona : barrio.getPersonaList()) {
                 Barrio oldBarrioOfPersonaListPersona = personaListPersona.getBarrio();
                 personaListPersona.setBarrio(barrio);
@@ -71,8 +81,14 @@ public class BarrioJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             Barrio persistentBarrio = em.find(Barrio.class, barrio.getBarrio());
+            Ciudad ciudadOld = persistentBarrio.getCiudad();
+            Ciudad ciudadNew = barrio.getCiudad();
             List<Persona> personaListOld = persistentBarrio.getPersonaList();
             List<Persona> personaListNew = barrio.getPersonaList();
+            if (ciudadNew != null) {
+                ciudadNew = em.getReference(ciudadNew.getClass(), ciudadNew.getCiudad());
+                barrio.setCiudad(ciudadNew);
+            }
             List<Persona> attachedPersonaListNew = new ArrayList<Persona>();
             for (Persona personaListNewPersonaToAttach : personaListNew) {
                 personaListNewPersonaToAttach = em.getReference(personaListNewPersonaToAttach.getClass(), personaListNewPersonaToAttach.getPersona());
@@ -81,6 +97,14 @@ public class BarrioJpaController implements Serializable {
             personaListNew = attachedPersonaListNew;
             barrio.setPersonaList(personaListNew);
             barrio = em.merge(barrio);
+            if (ciudadOld != null && !ciudadOld.equals(ciudadNew)) {
+                ciudadOld.getBarrioList().remove(barrio);
+                ciudadOld = em.merge(ciudadOld);
+            }
+            if (ciudadNew != null && !ciudadNew.equals(ciudadOld)) {
+                ciudadNew.getBarrioList().add(barrio);
+                ciudadNew = em.merge(ciudadNew);
+            }
             for (Persona personaListOldPersona : personaListOld) {
                 if (!personaListNew.contains(personaListOldPersona)) {
                     personaListOldPersona.setBarrio(null);
@@ -126,6 +150,11 @@ public class BarrioJpaController implements Serializable {
                 barrio.getBarrio();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The barrio with id " + id + " no longer exists.", enfe);
+            }
+            Ciudad ciudad = barrio.getCiudad();
+            if (ciudad != null) {
+                ciudad.getBarrioList().remove(barrio);
+                ciudad = em.merge(ciudad);
             }
             List<Persona> personaList = barrio.getPersonaList();
             for (Persona personaListPersona : personaList) {

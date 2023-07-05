@@ -35,7 +35,7 @@ public class StringUtils {
 		return false;
 	}
     
-    private static boolean isDoubleNumeric(String cadena){
+    public static boolean isDoubleNumeric(String cadena){
 		try {
 			Double.parseDouble(cadena);
 			return true;

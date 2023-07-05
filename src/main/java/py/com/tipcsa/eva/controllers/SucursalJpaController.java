@@ -21,7 +21,7 @@ import py.com.tipcsa.eva.entities.Sucursal;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class SucursalJpaController implements Serializable {
 

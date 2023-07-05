@@ -6,7 +6,10 @@
 package py.com.tipcsa.eva.entities;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,11 +19,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "persona")
@@ -38,7 +44,8 @@ import javax.persistence.Table;
     @NamedQuery(name = "Persona.findByFotoDocumento", query = "SELECT p FROM Persona p WHERE p.fotoDocumento = :fotoDocumento"),
     @NamedQuery(name = "Persona.findByHuellaId", query = "SELECT p FROM Persona p WHERE p.huellaId = :huellaId"),
     @NamedQuery(name = "Persona.findByTelefono", query = "SELECT p FROM Persona p WHERE p.telefono = :telefono"),
-    @NamedQuery(name = "Persona.findByVigente", query = "SELECT p FROM Persona p WHERE p.vigente = :vigente")})
+    @NamedQuery(name = "Persona.findByVigente", query = "SELECT p FROM Persona p WHERE p.vigente = :vigente"),
+    @NamedQuery(name = "Persona.findByFechaNacimiento", query = "SELECT p FROM Persona p WHERE p.fechaNacimiento = :fechaNacimiento")})
 public class Persona implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -76,6 +83,9 @@ public class Persona implements Serializable {
     @Basic(optional = false)
     @Column(name = "vigente")
     private boolean vigente;
+    @Column(name = "fecha_nacimiento")
+    @Temporal(TemporalType.DATE)
+    private Date fechaNacimiento;
     @JoinColumn(name = "area", referencedColumnName = "area")
     @ManyToOne
     private Area area;
@@ -83,14 +93,19 @@ public class Persona implements Serializable {
     @ManyToOne
     private Barrio barrio;
     @JoinColumn(name = "cargo", referencedColumnName = "cargo")
-    @ManyToOne(optional = false)
+    @ManyToOne
     private Cargo cargo;
-    @JoinColumn(name = "grupo", referencedColumnName = "grupo")
-    @ManyToOne(optional = false)
-    private Grupo grupo;
     @JoinColumn(name = "sucursal", referencedColumnName = "sucursal")
     @ManyToOne(optional = false)
     private Sucursal sucursal;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluado")
+    private List<Evaluacion> evaluacionList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluador")
+    private List<Evaluacion> evaluacionList1;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluado")
+    private List<EvaluadorEvaluado> evaluadorEvaluadoList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "persona")
+    private List<Usuario> usuarioList;
 
     public Persona() {
     }
@@ -212,6 +227,14 @@ public class Persona implements Serializable {
         this.vigente = vigente;
     }
 
+    public Date getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(Date fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
     public Area getArea() {
         return area;
     }
@@ -236,20 +259,44 @@ public class Persona implements Serializable {
         this.cargo = cargo;
     }
 
-    public Grupo getGrupo() {
-        return grupo;
-    }
-
-    public void setGrupo(Grupo grupo) {
-        this.grupo = grupo;
-    }
-
     public Sucursal getSucursal() {
         return sucursal;
     }
 
     public void setSucursal(Sucursal sucursal) {
         this.sucursal = sucursal;
+    }
+
+    public List<Evaluacion> getEvaluacionList() {
+        return evaluacionList;
+    }
+
+    public void setEvaluacionList(List<Evaluacion> evaluacionList) {
+        this.evaluacionList = evaluacionList;
+    }
+
+    public List<Evaluacion> getEvaluacionList1() {
+        return evaluacionList1;
+    }
+
+    public void setEvaluacionList1(List<Evaluacion> evaluacionList1) {
+        this.evaluacionList1 = evaluacionList1;
+    }
+
+    public List<EvaluadorEvaluado> getEvaluadorEvaluadoList() {
+        return evaluadorEvaluadoList;
+    }
+
+    public void setEvaluadorEvaluadoList(List<EvaluadorEvaluado> evaluadorEvaluadoList) {
+        this.evaluadorEvaluadoList = evaluadorEvaluadoList;
+    }
+
+    public List<Usuario> getUsuarioList() {
+        return usuarioList;
+    }
+
+    public void setUsuarioList(List<Usuario> usuarioList) {
+        this.usuarioList = usuarioList;
     }
 
     @Override

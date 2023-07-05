@@ -21,7 +21,7 @@ import javax.persistence.Table;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "grupo")
@@ -41,11 +41,9 @@ public class Grupo implements Serializable {
     @Column(name = "descripcion")
     private String descripcion;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "grupo")
-    private List<Persona> personaList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "grupo")
     private List<GrupoPregunta> grupoPreguntaList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "grupo")
-    private List<EvaluadorGrupo> evaluadorGrupoList;
+    private List<PuestoGrupo> puestoGrupoList;
 
     public Grupo() {
     }
@@ -75,14 +73,6 @@ public class Grupo implements Serializable {
         this.descripcion = descripcion;
     }
 
-    public List<Persona> getPersonaList() {
-        return personaList;
-    }
-
-    public void setPersonaList(List<Persona> personaList) {
-        this.personaList = personaList;
-    }
-
     public List<GrupoPregunta> getGrupoPreguntaList() {
         return grupoPreguntaList;
     }
@@ -91,12 +81,12 @@ public class Grupo implements Serializable {
         this.grupoPreguntaList = grupoPreguntaList;
     }
 
-    public List<EvaluadorGrupo> getEvaluadorGrupoList() {
-        return evaluadorGrupoList;
+    public List<PuestoGrupo> getPuestoGrupoList() {
+        return puestoGrupoList;
     }
 
-    public void setEvaluadorGrupoList(List<EvaluadorGrupo> evaluadorGrupoList) {
-        this.evaluadorGrupoList = evaluadorGrupoList;
+    public void setPuestoGrupoList(List<PuestoGrupo> puestoGrupoList) {
+        this.puestoGrupoList = puestoGrupoList;
     }
 
     @Override

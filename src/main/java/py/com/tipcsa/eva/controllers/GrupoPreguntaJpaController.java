@@ -20,7 +20,7 @@ import py.com.tipcsa.eva.entities.Pregunta;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class GrupoPreguntaJpaController implements Serializable {
 

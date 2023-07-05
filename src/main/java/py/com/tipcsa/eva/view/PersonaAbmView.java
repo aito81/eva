@@ -4,12 +4,14 @@ package py.com.tipcsa.eva.view;
 
 import java.awt.Dialog;
 
+import com.vaadin.data.ValueProvider;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.DescriptionGenerator;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Grid.ItemClick;
@@ -19,11 +21,15 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.components.grid.ItemClickListener;
 import com.vaadin.ui.renderers.ButtonRenderer;
+import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.renderers.HtmlRenderer;
+import com.vaadin.ui.themes.ValoTheme;
 
+import py.com.tipcsa.eva.EvaUI;
 import py.com.tipcsa.eva.entities.Persona;
 import py.com.tipcsa.eva.jpa.JpaPersonas;
 import py.com.tipcsa.eva.util.JpaUtil;
+import py.com.tipcsa.eva.util.StringUtils;
 import py.com.tipcsa.eva.util.ViewConfig;
 
 
@@ -36,11 +42,15 @@ public class PersonaAbmView extends CustomComponent implements View {
 	private HorizontalLayout botonLayout;
 	private Grid<Persona> gridPersona;
 	private Button btnAgregar;
+	private Button btnCencelar;
+	
 	private Window ventana;
+
 	
 	private JpaPersonas jpaPer = new JpaPersonas(JpaUtil.getEntityManagerFactory());
 	
 	public PersonaAbmView() {
+		
 		buildMainLayout();
 		setCompositionRoot(mainLayout);
 		btnAgregar.addClickListener(e -> addPersona());
@@ -71,7 +81,8 @@ public class PersonaAbmView extends CustomComponent implements View {
 		ventana = new Window("Consulta de Datos", editPersona);
 		ventana.center();
 		ventana.setSizeFull();
-		editPersona.getAltaLayout().setEnabled(false);
+		//editPersona.getAltaLayout().setEnabled(false);
+		editPersona.getMainLayout().setEnabled(false);
 		editPersona.getBotonLayout().setVisible(false);
 		UI.getCurrent().addWindow(ventana);
 		//ventana.addCloseListener(e -> gridPersona.setItems(jpaPer.findPersonasActiva()));
@@ -114,7 +125,7 @@ public class PersonaAbmView extends CustomComponent implements View {
 		mainLayout.addComponent(grillaLayout);
 		botonLayout = buildBotonLayout();
 		mainLayout.addComponent(botonLayout);
-		mainLayout.setComponentAlignment(botonLayout, new Alignment(0));
+		//mainLayout.setComponentAlignment(botonLayout, new Alignment(0));
 		
 		return mainLayout;
 		
@@ -135,17 +146,32 @@ public class PersonaAbmView extends CustomComponent implements View {
 	private HorizontalLayout buildBotonLayout() {
 		botonLayout = new HorizontalLayout();
 		
-		botonLayout.setWidth("-1px");
+		botonLayout.setWidth("100%");
 		botonLayout.setHeight("-1px");
 		botonLayout.setMargin(true);
 		botonLayout.setSpacing(true);
 		
 		//componentes
+		
+		btnCencelar = new Button();
+		btnCencelar.setCaption("Volver");
+		btnCencelar.addStyleName(ValoTheme.BUTTON_DANGER);
+		botonLayout.addComponent(btnCencelar);
+		botonLayout.setComponentAlignment(btnCencelar, new Alignment(0));
+		
+		btnCencelar.addClickListener(event -> volver());
+		
+		
+		
 		btnAgregar = new Button();
 		btnAgregar.setCaption("Añadir Persona");
 		btnAgregar.setWidth("-1px");
 		btnAgregar.setHeight("-1px");
+		btnAgregar.addStyleName(ValoTheme.BUTTON_DANGER);
 		botonLayout.addComponent(btnAgregar);
+		botonLayout.setComponentAlignment(btnAgregar, new Alignment(190));
+		
+		
 		
 		
 		
@@ -153,6 +179,19 @@ public class PersonaAbmView extends CustomComponent implements View {
 		
 		return botonLayout;
 	}
+
+
+
+
+	private void volver() {
+		
+		EvaUI.getCurrent().getNavigator().navigateTo("");
+	}
+
+
+
+
+
 
 
 
@@ -167,16 +206,37 @@ public class PersonaAbmView extends CustomComponent implements View {
 		//componentes
 		gridPersona = new Grid<Persona>();
 		gridPersona.setItems(jpaPer.findPersonasActiva());
+		
 		//gridPersona.addColumn()
 		/*gridPersona.setWidth("100%");
 		gridPersona.setHeight("100%");*/
 		gridPersona.setSizeFull();
 		gridPersona.setCaption("Mantenimiento de Personas");
-		gridPersona.addColumn(Persona::getNroDocumento).setCaption("Documento").setWidth(120).setId("documento");
+		gridPersona.addColumn(persona -> StringUtils.colocarFormatoCI((String.valueOf(persona.getNroDocumento()))).replace(",", ".")
+				).setCaption("Documento").setWidth(120).setId("documento");
 		gridPersona.addColumn(Persona::getNombre).setCaption("Nombre").setId("nombre");//.setWidth(300);
 		gridPersona.addColumn(Persona::getApellido).setCaption("Apellido").setId("apellido");
-		gridPersona.addColumn(Persona -> Persona.getCargo().getDescripcion()).setCaption("Cargo").setId("cargo");
+		gridPersona.addColumn(persona -> {
+			if (persona.getCargo() != null) {
+				return persona.getCargo().getDescripcion();
+			}else {
+				return persona.getCargo();
+			}
+			
+		}).setCaption("Cargo").setId("cargo");
+		//gridPersona.addColumn(Persona::getCargo, new DateRenderer()).setCaption("Cargo").setId("cargo");
+		/*gridPersona.getColumn("cargo").setDescriptionGenerator(new DescriptionGenerator<Persona>() {
+			
+			@Override
+			public String apply(Persona t) {
+				if (t.getCargo() == null) {
+					return "holaaa";
+				}
+				return t.getCargo().getDescripcion();
+			}
+		});*/
 		
+	
 		
 		
 		
@@ -205,6 +265,7 @@ public class PersonaAbmView extends CustomComponent implements View {
 		gridPersona.addColumn(Persona -> FontAwesome.EYE.getHtml(), 
 				new HtmlRenderer()).setId("ver").setStyleGenerator(matriz ->
 				"align-center").setWidth(70).setCaption("Ver");
+		
 		gridPersona.addColumn(Persona -> FontAwesome.EDIT.getHtml(),
 				new HtmlRenderer()).setId("editar").setStyleGenerator(matriz ->
 		"align-center").setWidth(70).setCaption("Editar");

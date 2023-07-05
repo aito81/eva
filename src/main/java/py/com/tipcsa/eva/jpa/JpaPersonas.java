@@ -12,6 +12,7 @@ import javax.persistence.Query;
 import com.vaadin.ui.Notification;
 
 import py.com.tipcsa.eva.controllers.PersonaJpaController;
+import py.com.tipcsa.eva.entities.Cargo;
 import py.com.tipcsa.eva.entities.Persona;
 
 
@@ -28,7 +29,21 @@ public class JpaPersonas extends PersonaJpaController {
 		// TODO Auto-generated constructor stub
 	}
 	
-	
+	public List<Persona> findPersonasSinUser(){
+		EntityManager em = getEntityManager();
+		List<Persona> listPer = null;
+		try {
+			String sqlQry= " select * from persona p where p.persona not in (select u.persona from usuario u) "
+					+ " and p.vigente = true ";
+			Query q = em.createNativeQuery(sqlQry, Persona.class);
+			listPer = q.getResultList();
+		} catch (Exception e) {
+			Notification.show(e.getMessage(), Notification.TYPE_ERROR_MESSAGE);
+		}finally {
+			em.close();
+		}
+		return listPer;
+	}
 	
 	
 	public List<Persona> findPersonasActiva(){
@@ -111,7 +126,67 @@ public class JpaPersonas extends PersonaJpaController {
 	
 	
 	
+	public List<Persona> findPersonaByCargo(Cargo cargo){
+		
+		EntityManager em = getEntityManager();
+		List<Persona> listPersona = null;
+		try {
+			String sqlQry = " select * from persona p where p.cargo = ?1 ";
+			Query q = em.createNativeQuery(sqlQry, Persona.class);
+			q.setParameter(1, cargo.getCargo());
+			listPersona = q.getResultList();
+		} catch (Exception e) {
+			Notification.show(e.getMessage() +" Error personas por cargo", Notification.TYPE_ERROR_MESSAGE );
+		}finally {
+			em.close();
+		}
+		
+		
+		return listPersona;
+	}
 	
 	
+	public List<Persona> findPersonaWithCargoByEvaluador(Cargo evaluador){
+		
+		EntityManager em = getEntityManager();
+		List<Persona> listPersona = null;
+		try {
+			String sqlQry = " select * from persona p where p.cargo in (select ec.cargo from \n" + 
+					"										  evaluador_cargo ec where ec.evaluador = ?1) ";
+			Query q = em.createNativeQuery(sqlQry, Persona.class);
+			q.setParameter(1, evaluador.getCargo());
+			listPersona = q.getResultList();
+		} catch (Exception e) {
+			Notification.show(e.getMessage() +" Error con cargo por evaluador ", Notification.TYPE_ERROR_MESSAGE );
+		}finally {
+			em.close();
+		}
+		
+		
+		return listPersona;
+	}
+	
+	
+	
+	public List<Persona> findEvaluadorByCargo(Cargo cargo){
+		
+		EntityManager em = getEntityManager();
+		List<Persona> listPersona = null;
+		try {
+			String sqlQry = " select * from persona p where p.cargo = (select distinct ec.evaluador from persona p \n" + 
+					"inner join evaluador_cargo ec on ec.cargo = p.cargo\n" + 
+					"where p.cargo = ?1)";
+			Query q = em.createNativeQuery(sqlQry, Persona.class);
+			q.setParameter(1, cargo.getCargo());
+			listPersona = q.getResultList();
+		} catch (Exception e) {
+			Notification.show(e.getMessage() +" Error evaluador por cargo", Notification.TYPE_ERROR_MESSAGE );
+		}finally {
+			em.close();
+		}
+	
+		return listPersona;
+	
+	}
 
 }

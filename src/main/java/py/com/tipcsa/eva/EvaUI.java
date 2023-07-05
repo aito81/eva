@@ -52,7 +52,7 @@ public class EvaUI extends UI {
 	protected void init(VaadinRequest vaadinRequest) {
 
 		setupEventBus();
-		if (UserUtil.isLoggedIn()){
+	if (UserUtil.isLoggedIn()){
 			setContent(new Main());
 		} else {
 			setContent(new LoginView());

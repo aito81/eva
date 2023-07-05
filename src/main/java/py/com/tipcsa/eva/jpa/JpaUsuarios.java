@@ -2,10 +2,15 @@ package py.com.tipcsa.eva.jpa;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
+import com.vaadin.ui.Notification;
+
 import py.com.tipcsa.eva.controllers.UsuarioJpaController;
+import py.com.tipcsa.eva.entities.Usuario;
 import py.com.tipcsa.eva.util.Crypto;
+
 
 public class JpaUsuarios extends UsuarioJpaController {
 
@@ -42,5 +47,67 @@ public class JpaUsuarios extends UsuarioJpaController {
 		}
 		return adelante;
 	}
+	
+	
+	
+	
+	
+	public Boolean findUsuarioRepetido(String usuario){
+		EntityManager em = getEntityManager();
+		usuario = "'" + usuario + "'";
+		Boolean repetido = false;
+		try {
+			String sql = " select * from usuario u where u.descripcion = " + usuario;
+			Query q = em.createNativeQuery(sql);
+			//q.setParameter(1, nro);
+			//listMarcas = q.getResultList();
+			/*if (!listMarcas.isEmpty()) {
+				repetido = true;
+			}*/
+			
+			try {
+				if( !q.getSingleResult().toString().equals("0")){
+					repetido = true;
+				}
+			} catch (NoResultException e) {
+				repetido = false;
+			}
+			
+	
+			
+		} catch (Exception e) {
+			
+			Notification.show(e.getMessage(), Notification.Type.ERROR_MESSAGE);
+		}
+		return repetido;
+	}
+	
+	
+	public Usuario findUsuarioByUser(String user) {
+    	EntityManager em = getEntityManager();
+    	Usuario usuario = null;
+    	try {
+    		
+    		
+            javax.persistence.criteria.CriteriaBuilder cb = em.getCriteriaBuilder();
+            javax.persistence.criteria.CriteriaQuery<Usuario> cq = cb.createQuery(Usuario.class);
+            javax.persistence.criteria.Root<Usuario> u = cq.from(Usuario.class);
+            cq.where(cb.equal(u.get("descripcion"), user));
+            Query q = em.createQuery(cq).setHint("eclipselink.refresh", true).setMaxResults(1);
+            usuario = (Usuario) q.getSingleResult();
+    	} catch (Exception ex) {
+    		// retornara null
+        } finally {
+            em.close();
+        }
+    	
+    	return usuario;
+    }
+	
+	
+	
+	
+	
+	
 
 }

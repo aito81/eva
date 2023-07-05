@@ -6,6 +6,7 @@
 package py.com.tipcsa.eva.entities;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -20,17 +21,22 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "evaluacion")
 @NamedQueries({
     @NamedQuery(name = "Evaluacion.findAll", query = "SELECT e FROM Evaluacion e"),
     @NamedQuery(name = "Evaluacion.findByEvaluacion", query = "SELECT e FROM Evaluacion e WHERE e.evaluacion = :evaluacion"),
-    @NamedQuery(name = "Evaluacion.findByPuntaje", query = "SELECT e FROM Evaluacion e WHERE e.puntaje = :puntaje")})
+    @NamedQuery(name = "Evaluacion.findByPuntaje", query = "SELECT e FROM Evaluacion e WHERE e.puntaje = :puntaje"),
+    @NamedQuery(name = "Evaluacion.findByPuntajeTotal", query = "SELECT e FROM Evaluacion e WHERE e.puntajeTotal = :puntajeTotal"),
+    @NamedQuery(name = "Evaluacion.findByNota", query = "SELECT e FROM Evaluacion e WHERE e.nota = :nota"),
+    @NamedQuery(name = "Evaluacion.findByFecha", query = "SELECT e FROM Evaluacion e WHERE e.fecha = :fecha")})
 public class Evaluacion implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -42,12 +48,23 @@ public class Evaluacion implements Serializable {
     @Basic(optional = false)
     @Column(name = "puntaje")
     private double puntaje;
-    @JoinColumn(name = "evaluado", referencedColumnName = "usuario")
+    @Basic(optional = false)
+    @Column(name = "puntaje_total")
+    private double puntajeTotal;
+    @Column(name = "nota")
+    private String nota;
+    @Column(name = "fecha")
+    @Temporal(TemporalType.DATE)
+    private Date fecha;
+    @JoinColumn(name = "periodo", referencedColumnName = "periodo")
+    @ManyToOne
+    private Periodo periodo;
+    @JoinColumn(name = "evaluado", referencedColumnName = "persona")
     @ManyToOne(optional = false)
-    private Usuario evaluado;
-    @JoinColumn(name = "evaluador", referencedColumnName = "usuario")
+    private Persona evaluado;
+    @JoinColumn(name = "evaluador", referencedColumnName = "persona")
     @ManyToOne(optional = false)
-    private Usuario evaluador;
+    private Persona evaluador;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "evaluacion")
     private List<EvaluacionDetalle> evaluacionDetalleList;
 
@@ -58,9 +75,10 @@ public class Evaluacion implements Serializable {
         this.evaluacion = evaluacion;
     }
 
-    public Evaluacion(Integer evaluacion, double puntaje) {
+    public Evaluacion(Integer evaluacion, double puntaje, double puntajeTotal) {
         this.evaluacion = evaluacion;
         this.puntaje = puntaje;
+        this.puntajeTotal = puntajeTotal;
     }
 
     public Integer getEvaluacion() {
@@ -79,19 +97,51 @@ public class Evaluacion implements Serializable {
         this.puntaje = puntaje;
     }
 
-    public Usuario getEvaluado() {
+    public double getPuntajeTotal() {
+        return puntajeTotal;
+    }
+
+    public void setPuntajeTotal(double puntajeTotal) {
+        this.puntajeTotal = puntajeTotal;
+    }
+
+    public String getNota() {
+        return nota;
+    }
+
+    public void setNota(String nota) {
+        this.nota = nota;
+    }
+
+    public Date getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
+    }
+
+    public Periodo getPeriodo() {
+        return periodo;
+    }
+
+    public void setPeriodo(Periodo periodo) {
+        this.periodo = periodo;
+    }
+
+    public Persona getEvaluado() {
         return evaluado;
     }
 
-    public void setEvaluado(Usuario evaluado) {
+    public void setEvaluado(Persona evaluado) {
         this.evaluado = evaluado;
     }
 
-    public Usuario getEvaluador() {
+    public Persona getEvaluador() {
         return evaluador;
     }
 
-    public void setEvaluador(Usuario evaluador) {
+    public void setEvaluador(Persona evaluador) {
         this.evaluador = evaluador;
     }
 

@@ -21,7 +21,7 @@ import py.com.tipcsa.eva.entities.Valor;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class ValorJpaController implements Serializable {
 

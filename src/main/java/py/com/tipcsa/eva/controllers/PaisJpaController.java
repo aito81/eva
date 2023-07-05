@@ -21,7 +21,7 @@ import py.com.tipcsa.eva.entities.Pais;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class PaisJpaController implements Serializable {
 

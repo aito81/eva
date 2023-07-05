@@ -6,20 +6,23 @@
 package py.com.tipcsa.eva.controllers;
 
 import java.io.Serializable;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import py.com.tipcsa.eva.entities.Pais;
+import py.com.tipcsa.eva.entities.Ciudad;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import py.com.tipcsa.eva.controllers.exceptions.IllegalOrphanException;
 import py.com.tipcsa.eva.controllers.exceptions.NonexistentEntityException;
 import py.com.tipcsa.eva.entities.Departamento;
-import py.com.tipcsa.eva.entities.Pais;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 public class DepartamentoJpaController implements Serializable {
 
@@ -33,6 +36,9 @@ public class DepartamentoJpaController implements Serializable {
     }
 
     public void create(Departamento departamento) {
+        if (departamento.getCiudadList() == null) {
+            departamento.setCiudadList(new ArrayList<Ciudad>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -42,10 +48,25 @@ public class DepartamentoJpaController implements Serializable {
                 pais = em.getReference(pais.getClass(), pais.getPais());
                 departamento.setPais(pais);
             }
+            List<Ciudad> attachedCiudadList = new ArrayList<Ciudad>();
+            for (Ciudad ciudadListCiudadToAttach : departamento.getCiudadList()) {
+                ciudadListCiudadToAttach = em.getReference(ciudadListCiudadToAttach.getClass(), ciudadListCiudadToAttach.getCiudad());
+                attachedCiudadList.add(ciudadListCiudadToAttach);
+            }
+            departamento.setCiudadList(attachedCiudadList);
             em.persist(departamento);
             if (pais != null) {
                 pais.getDepartamentoList().add(departamento);
                 pais = em.merge(pais);
+            }
+            for (Ciudad ciudadListCiudad : departamento.getCiudadList()) {
+                Departamento oldDepartamentoOfCiudadListCiudad = ciudadListCiudad.getDepartamento();
+                ciudadListCiudad.setDepartamento(departamento);
+                ciudadListCiudad = em.merge(ciudadListCiudad);
+                if (oldDepartamentoOfCiudadListCiudad != null) {
+                    oldDepartamentoOfCiudadListCiudad.getCiudadList().remove(ciudadListCiudad);
+                    oldDepartamentoOfCiudadListCiudad = em.merge(oldDepartamentoOfCiudadListCiudad);
+                }
             }
             em.getTransaction().commit();
         } finally {
@@ -55,7 +76,7 @@ public class DepartamentoJpaController implements Serializable {
         }
     }
 
-    public void edit(Departamento departamento) throws NonexistentEntityException, Exception {
+    public void edit(Departamento departamento) throws IllegalOrphanException, NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -63,10 +84,31 @@ public class DepartamentoJpaController implements Serializable {
             Departamento persistentDepartamento = em.find(Departamento.class, departamento.getDepartamento());
             Pais paisOld = persistentDepartamento.getPais();
             Pais paisNew = departamento.getPais();
+            List<Ciudad> ciudadListOld = persistentDepartamento.getCiudadList();
+            List<Ciudad> ciudadListNew = departamento.getCiudadList();
+            List<String> illegalOrphanMessages = null;
+            for (Ciudad ciudadListOldCiudad : ciudadListOld) {
+                if (!ciudadListNew.contains(ciudadListOldCiudad)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain Ciudad " + ciudadListOldCiudad + " since its departamento field is not nullable.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
             if (paisNew != null) {
                 paisNew = em.getReference(paisNew.getClass(), paisNew.getPais());
                 departamento.setPais(paisNew);
             }
+            List<Ciudad> attachedCiudadListNew = new ArrayList<Ciudad>();
+            for (Ciudad ciudadListNewCiudadToAttach : ciudadListNew) {
+                ciudadListNewCiudadToAttach = em.getReference(ciudadListNewCiudadToAttach.getClass(), ciudadListNewCiudadToAttach.getCiudad());
+                attachedCiudadListNew.add(ciudadListNewCiudadToAttach);
+            }
+            ciudadListNew = attachedCiudadListNew;
+            departamento.setCiudadList(ciudadListNew);
             departamento = em.merge(departamento);
             if (paisOld != null && !paisOld.equals(paisNew)) {
                 paisOld.getDepartamentoList().remove(departamento);
@@ -75,6 +117,17 @@ public class DepartamentoJpaController implements Serializable {
             if (paisNew != null && !paisNew.equals(paisOld)) {
                 paisNew.getDepartamentoList().add(departamento);
                 paisNew = em.merge(paisNew);
+            }
+            for (Ciudad ciudadListNewCiudad : ciudadListNew) {
+                if (!ciudadListOld.contains(ciudadListNewCiudad)) {
+                    Departamento oldDepartamentoOfCiudadListNewCiudad = ciudadListNewCiudad.getDepartamento();
+                    ciudadListNewCiudad.setDepartamento(departamento);
+                    ciudadListNewCiudad = em.merge(ciudadListNewCiudad);
+                    if (oldDepartamentoOfCiudadListNewCiudad != null && !oldDepartamentoOfCiudadListNewCiudad.equals(departamento)) {
+                        oldDepartamentoOfCiudadListNewCiudad.getCiudadList().remove(ciudadListNewCiudad);
+                        oldDepartamentoOfCiudadListNewCiudad = em.merge(oldDepartamentoOfCiudadListNewCiudad);
+                    }
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -93,7 +146,7 @@ public class DepartamentoJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws NonexistentEntityException {
+    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -104,6 +157,17 @@ public class DepartamentoJpaController implements Serializable {
                 departamento.getDepartamento();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The departamento with id " + id + " no longer exists.", enfe);
+            }
+            List<String> illegalOrphanMessages = null;
+            List<Ciudad> ciudadListOrphanCheck = departamento.getCiudadList();
+            for (Ciudad ciudadListOrphanCheckCiudad : ciudadListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Departamento (" + departamento + ") cannot be destroyed since the Ciudad " + ciudadListOrphanCheckCiudad + " in its ciudadList field has a non-nullable departamento field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             Pais pais = departamento.getPais();
             if (pais != null) {

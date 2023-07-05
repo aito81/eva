@@ -20,7 +20,7 @@ import javax.persistence.Table;
 
 /**
  *
- * @author santiago
+ * @author santi
  */
 @Entity
 @Table(name = "evaluador_evaluado")
@@ -35,12 +35,12 @@ public class EvaluadorEvaluado implements Serializable {
     @Basic(optional = false)
     @Column(name = "evaluador_evaluado")
     private Integer evaluadorEvaluado;
-    @JoinColumn(name = "evaluado", referencedColumnName = "usuario")
+    @JoinColumn(name = "evaluador", referencedColumnName = "cargo")
     @ManyToOne(optional = false)
-    private Usuario evaluado;
-    @JoinColumn(name = "evaluador", referencedColumnName = "usuario")
+    private Cargo evaluador;
+    @JoinColumn(name = "evaluado", referencedColumnName = "persona")
     @ManyToOne(optional = false)
-    private Usuario evaluador;
+    private Persona evaluado;
 
     public EvaluadorEvaluado() {
     }
@@ -57,20 +57,20 @@ public class EvaluadorEvaluado implements Serializable {
         this.evaluadorEvaluado = evaluadorEvaluado;
     }
 
-    public Usuario getEvaluado() {
-        return evaluado;
-    }
-
-    public void setEvaluado(Usuario evaluado) {
-        this.evaluado = evaluado;
-    }
-
-    public Usuario getEvaluador() {
+    public Cargo getEvaluador() {
         return evaluador;
     }
 
-    public void setEvaluador(Usuario evaluador) {
+    public void setEvaluador(Cargo evaluador) {
         this.evaluador = evaluador;
+    }
+
+    public Persona getEvaluado() {
+        return evaluado;
+    }
+
+    public void setEvaluado(Persona evaluado) {
+        this.evaluado = evaluado;
     }
 
     @Override
